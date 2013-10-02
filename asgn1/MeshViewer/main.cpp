@@ -704,9 +704,6 @@ void SelectVertexByPoint()
 	
 }
 
-
-
-
 // help functions
 void DrawBoundaryEdges(){
 
