@@ -361,16 +361,19 @@ void Mesh::ComputeVertexNormals()
 	// Since vertices can be classified into internal or boundary, 
 	// we need to compute each class respectively.
 
-	// Compute the normals of internal vertices
+	// 1 Compute the normals of internal vertices
 	for(size_t i=0; i<this->heList.size(); i++) {
 		
 		Vertex* currentVertex  = heList[i]->Start();
-		Vector3d pos = currentVertex->Position();
 
 		// Use the geometry information to compute t_1 and t_2;
 		Vector3d t_1(0.0, 0.0, 0.0);
 		Vector3d t_2(0.0, 0.0, 0.0);
 		int k = currentVertex->Valence();
+		if( k < 2) {
+			cout << "Vertex Valence Computed Error!" << endl;
+			return;
+		}
 		OneRingVertex ring(currentVertex);
 		Vertex* temp = NULL;
 		for(size_t i=0; i<k; i++) {
@@ -382,7 +385,45 @@ void Mesh::ComputeVertexNormals()
 		currentVertex->SetNormal(normal);		
 	}
 
-	// Compute the normals of boundary vertices
+	// 2 Compute the normals of boundary vertices
+	for(size_t i=0; i<this->bheList.size(); i++) {
+
+		Vertex* currentVertex = bheList[i]->Start();
+		Vector3d t_along(0.0, 0.0, 0.0);
+		Vector3d t_across(0.0, 0.0, 0.0);
+		OneRingVertex ring(currentVertex);
+		Vertex *p0, *p1, *pend;
+
+		int k = currentVertex->Valence();
+		if(k = 2) {
+			p0 = ring.NextVertex();
+			p1 = ring.NextVertex();
+			t_along = p0->Position() - p1->Position();
+			t_across = p0->Position() + p1->Position() - 2*currentVertex->Position();
+		} else if(k = 3) {
+			p0 = ring.NextVertex();
+			p1 = ring.NextVertex();
+			pend = ring.NextVertex();
+			t_along = p0->Position() - pend->Position();
+			t_across = p1->Position() - currentVertex->Position();
+		} else if(k >= 4) {
+			double theta = PI/(k-1);
+			p0 = ring.NextVertex();
+			Vertex* temp;
+			for(size_t i=1; i<k-1; i++) {
+				temp = ring.NextVertex();
+				t_across = t_across + sin(i*theta)*temp->Position();
+			}
+			pend = ring.NextVertex();
+			t_across = t_across*2*(cos(theta) - 1);
+			t_across = t_across + sin(theta)*(p0->Position() + pend->Position());
+			t_along = p0->Position() - pend->Position();
+		} else {
+			cout << "Vertex Valence Computed Error!" << endl;
+			return;
+		}
+		Vector3d normal = t_along.Cross(t_across);
+	}
 
 }
 
