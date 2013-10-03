@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cmath>
 #include <float.h>
+#define PI 3.1415926
 using namespace std;
 
 /////////////////////////////////////////
@@ -354,11 +355,35 @@ void Mesh::HSVtoRGB( double *r, double *g, double *b, double h, double s , doubl
 // -------------------------------------------------------
 // Implement the following functions
 // -------------------------------------------------------
+
 void Mesh::ComputeVertexNormals() 
 {
-	/*************************/
-	/* insert your code here */
-	/*************************/
+	// Since vertices can be classified into internal or boundary, 
+	// we need to compute each class respectively.
+
+	// Compute the normals of internal vertices
+	for(size_t i=0; i<this->heList.size(); i++) {
+		
+		Vertex* currentVertex  = heList[i]->Start();
+		Vector3d pos = currentVertex->Position();
+
+		// Use the geometry information to compute t_1 and t_2;
+		Vector3d t_1(0.0, 0.0, 0.0);
+		Vector3d t_2(0.0, 0.0, 0.0);
+		int k = currentVertex->Valence();
+		OneRingVertex ring(currentVertex);
+		Vertex* temp = NULL;
+		for(size_t i=0; i<k; i++) {
+			temp = ring.NextVertex();
+			t_1 = t_1 + cos(2*PI*i/k)*temp->Position();
+			t_2 = t_2 + sin(2*PI*i/k)*temp->Position();
+		}
+		Vector3d normal = t_1.Cross(t_2);
+		currentVertex->SetNormal(normal);		
+	}
+
+	// Compute the normals of boundary vertices
+
 }
 
 void Mesh::UmbrellaSmooth() 
