@@ -356,6 +356,7 @@ void Mesh::HSVtoRGB( double *r, double *g, double *b, double h, double s , doubl
 // Implement the following functions
 // -------------------------------------------------------
 
+
 void Mesh::ComputeVertexNormals() 
 {
 	// Since vertices can be classified into internal or boundary, 
@@ -453,6 +454,8 @@ void Mesh::ImplicitUmbrellaSmooth()
 }
 void Mesh::ComputeVertexCurvatures()
 {
+	// 1 Compute the mean curvature of each vertex
+	double* curvatures = new double[vList.size()];
 	for(size_t i=0; i<vList.size(); i++) {
 
 		Vertex* p = vList[i];
@@ -524,7 +527,23 @@ void Mesh::ComputeVertexCurvatures()
 		// Do the division
 		mean_curvature = mean_curvature/(-4*A);
 		// Then we get the final mean curvature of vertex p.
-		//cout << "mean_curvature" << mean_curvature.L2Norm() << endl;
+		curvatures[i] = mean_curvature.L2Norm();
+	}
+
+	// 2 Visualize the curvature by using HSV color space.
+	// First we map the value of curvature to 0%-100%
+	double max_curva =  0.0;
+	for(size_t i=0; i<vList.size(); i++) {
+		if(max_curva < curvatures[i]) max_curva = curvatures[i];
+	}
+	for(size_t i=0; i<vList.size(); i++) {
+		curvatures[i] = curvatures[i]/max_curva;
+		double red = 0.0, green = 0.0, blue = 0.0;
+		double s = 1.0, v = 1.0;
+		HSVtoRGB(&red, &green, &blue, curvatures[i]*360, s, v);
+		//cout << "s" << curvatures[i] << endl;
+		//cout << "r: " << red << ", g: " << green << ", b: " << blue << endl; 
+		vList[i]->SetColor(Vector3d(red, green, blue));
 	}
 }
 
