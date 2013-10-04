@@ -206,7 +206,7 @@ void DisplayFunc() {
 	case SMOOTHSHADED: DrawSmoothShaded(); break;
 	case COLORSMOOTHSHADED: DrawColorSmoothShaded(); break;
 	}
-	
+	//mesh.ComputeVertexNormals();
 	DrawSelectedVertices();
 	DrawBoundaryEdges();
 	
@@ -313,12 +313,17 @@ void DrawColorSmoothShaded() {
 		Vertex * v3 = f->HalfEdge()->Next()->End();
 		glNormal3dv(v1->Normal().ToArray());
 		glColor3dv(v1->Color().ToArray());
+		//glColor3f(1.0f, 1.0f, 0.0f);
 		glVertex3dv(v1->Position().ToArray());
+
 		glNormal3dv(v2->Normal().ToArray());
 		glColor3dv(v2->Color().ToArray());
+		//glColor3f(1.0f, 1.0f, 0.0f);
 		glVertex3dv(v2->Position().ToArray());
+
 		glNormal3dv(v3->Normal().ToArray());
 		glColor3dv(v3->Color().ToArray());
+		//glColor3f(1.0f, 1.0f, 0.0f);
 		glVertex3dv(v3->Position().ToArray());
 	}
 	glEnd();

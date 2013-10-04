@@ -381,7 +381,14 @@ void Mesh::ComputeVertexNormals()
 			t_1 = t_1 + cos(2*PI*i/k)*temp->Position();
 			t_2 = t_2 + sin(2*PI*i/k)*temp->Position();
 		}
+// Testing..
+// cout << "P: (" << currentVertex->Position() << ") " << endl; 
+// Testing..
+// cout << "t_1 " <<  t_1 << endl;
 		Vector3d normal = t_1.Cross(t_2);
+		normal /= normal.L2Norm();
+// Testing..
+// cout << "normal:  " <<  normal << endl;
 		currentVertex->SetNormal(normal);		
 	}
 
@@ -423,8 +430,15 @@ void Mesh::ComputeVertexNormals()
 			return;
 		}
 		Vector3d normal = t_along.Cross(t_across);
+		normal /= normal.L2Norm();
+		currentVertex->SetNormal(normal);
 	}
 
+	// Add Color for Non-boundary Vertices to visualize the difference between flat shading & smooth shading
+	for(size_t i=0; i<heList.size(); i++) {
+		Vertex* curr = heList[i]->Start();
+		curr->SetColor(Vector3d(1.0, 1.0, 0.0));
+	}
 }
 
 void Mesh::UmbrellaSmooth() 
