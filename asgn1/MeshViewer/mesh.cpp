@@ -456,8 +456,53 @@ void Mesh::ImplicitUmbrellaSmooth()
 }
 void Mesh::ComputeVertexCurvatures()
 {
-	/*************************/
-	/* insert your code here */
-	/*************************/
+	for(size_t i=0; i<vList.size(); i++) {
+
+		Vertex* p = vList[i];
+		int k = p->Valence();
+		if(k<=2) {
+			cout << "Mean Curvature Computed Error!" << endl;
+			return;
+		}
+		double A = 0.0;	// A is the sum of all the triangle areas shared vertex p.
+		// We compute the area of triangle by using Heron's formula
+		double s = 0.0;	// S = \frac{1}{2}(a + b + c)
+		double a= 0.0, b = 0.0, c = 0.0; // Three edges of the triangle.
+		Vertex* p_pre, *p_j, *p_nex, *p_0, *p_1;
+		OneRingVertex ring(p);
+		p_0 = ring.NextVertex();
+		p_j = p_0;
+		p_1 = ring.NextVertex();
+		p_nex = p_1;
+		// Calculate the interior triangle areas
+		for(int j=1; j<k-1; j++) {
+			p_pre = p_j;
+			p_j = p_nex;
+			p_nex = ring.NextVertex();
+
+			a = (p->Position() - p_j->Position()).L2Norm();
+			b = (p_j->Position() - p_nex->Position()).L2Norm();
+			c = (p_nex->Position() - p->Position()).L2Norm();
+			s = (a + b + c)/2;
+			A += sqrt(s*(s-a)*(s-b)*(s-c));
+		}
+		// Add up the start and end triangle areas
+		p_pre = p_j;
+		p_j = p_nex;
+		p_nex = p_0;
+		a = (p->Position() - p_j->Position()).L2Norm();
+		b = (p_j->Position() - p_nex->Position()).L2Norm();
+		c = (p_nex->Position() - p->Position()).L2Norm();
+		s = (a + b + c)/2;
+		A += sqrt(s*(s-a)*(s-b)*(s-c));
+		p_pre = p_j;
+		p_j = p_nex;
+		p_nex = p_1;
+		a = (p->Position() - p_j->Position()).L2Norm();
+		b = (p_j->Position() - p_nex->Position()).L2Norm();
+		c = (p_nex->Position() - p->Position()).L2Norm();
+		s = (a + b + c)/2;
+		A += sqrt(s*(s-a)*(s-b)*(s-c));
+	}
 }
 
