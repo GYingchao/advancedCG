@@ -360,8 +360,11 @@ void Mesh::ComputeVertexNormals()
 {
 	// Since vertices can be classified into internal or boundary, 
 	// we need to compute each class respectively.
+//ofstream output;
+//output.open("normals.txt");
 
 	// 1 Compute the normals of internal vertices
+//output << "Interior vertex normals: " << endl;
 	for(size_t i=0; i<this->heList.size(); i++) {
 		
 		Vertex* currentVertex  = heList[i]->Start();
@@ -381,18 +384,15 @@ void Mesh::ComputeVertexNormals()
 			t_1 = t_1 + cos(2*PI*i/k)*temp->Position();
 			t_2 = t_2 + sin(2*PI*i/k)*temp->Position();
 		}
-// Testing..
-// cout << "P: (" << currentVertex->Position() << ") " << endl; 
-// Testing..
-// cout << "t_1 " <<  t_1 << endl;
 		Vector3d normal = t_1.Cross(t_2);
 		normal /= normal.L2Norm();
-// Testing..
-// cout << "normal:  " <<  normal << endl;
-		currentVertex->SetNormal(normal);		
+		currentVertex->SetNormal(normal);	
+
+//output << normal << endl;
 	}
 
 	// 2 Compute the normals of boundary vertices
+//output << "Boundary vertex normals: " << endl;
 	for(size_t i=0; i<this->bheList.size(); i++) {
 
 		Vertex* currentVertex = bheList[i]->Start();
@@ -432,13 +432,10 @@ void Mesh::ComputeVertexNormals()
 		Vector3d normal = t_along.Cross(t_across);
 		normal /= normal.L2Norm();
 		currentVertex->SetNormal(normal);
-	}
 
-	// Add Color for Non-boundary Vertices to visualize the difference between flat shading & smooth shading
-	for(size_t i=0; i<heList.size(); i++) {
-		Vertex* curr = heList[i]->Start();
-		curr->SetColor(Vector3d(1.0, 1.0, 0.0));
+//output << normal << endl;
 	}
+//output.close();
 }
 
 void Mesh::UmbrellaSmooth() 
@@ -464,29 +461,39 @@ void Mesh::ComputeVertexCurvatures()
 			cout << "Mean Curvature Computed Error!" << endl;
 			return;
 		}
+		Vector3d mean_curvature(0.0, 0.0, 0.0);
+		double cos_alpha = 0.0, cos_beta = 0.0, cot_alpha = 0.0, cot_beta = 0.0;
 		double A = 0.0;	// A is the sum of all the triangle areas shared vertex p.
 		// We compute the area of triangle by using Heron's formula
 		double s = 0.0;	// S = \frac{1}{2}(a + b + c)
-		double a= 0.0, b = 0.0, c = 0.0; // Three edges of the triangle.
+		double a= 0.0, b = 0.0, c = 0.0; // Three edge lengths of the triangle.
 		Vertex* p_pre, *p_j, *p_nex, *p_0, *p_1;
 		OneRingVertex ring(p);
 		p_0 = ring.NextVertex();
 		p_j = p_0;
 		p_1 = ring.NextVertex();
 		p_nex = p_1;
-		// Calculate the interior triangle areas
+
 		for(int j=1; j<k-1; j++) {
 			p_pre = p_j;
 			p_j = p_nex;
 			p_nex = ring.NextVertex();
 
+			// Calculate the interior triangle areas
 			a = (p->Position() - p_j->Position()).L2Norm();
 			b = (p_j->Position() - p_nex->Position()).L2Norm();
 			c = (p_nex->Position() - p->Position()).L2Norm();
 			s = (a + b + c)/2;
 			A += sqrt(s*(s-a)*(s-b)*(s-c));
+
+			// Calculate the curvature part
+			cos_alpha = (p->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((p->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+			cos_beta = (p->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((p->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+			cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+			cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+			mean_curvature += (cot_alpha+cot_beta)*(p_j->Position() - p->Position());
 		}
-		// Add up the start and end triangle areas
+		// Add up the calculation of start and end triangles
 		p_pre = p_j;
 		p_j = p_nex;
 		p_nex = p_0;
@@ -495,6 +502,11 @@ void Mesh::ComputeVertexCurvatures()
 		c = (p_nex->Position() - p->Position()).L2Norm();
 		s = (a + b + c)/2;
 		A += sqrt(s*(s-a)*(s-b)*(s-c));
+		cos_alpha = (p->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((p->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+		cos_beta = (p->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((p->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+		cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+		cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+		mean_curvature += (cot_alpha+cot_beta)*(p_j->Position() - p->Position());
 		p_pre = p_j;
 		p_j = p_nex;
 		p_nex = p_1;
@@ -503,6 +515,16 @@ void Mesh::ComputeVertexCurvatures()
 		c = (p_nex->Position() - p->Position()).L2Norm();
 		s = (a + b + c)/2;
 		A += sqrt(s*(s-a)*(s-b)*(s-c));
+		cos_alpha = (p->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((p->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+		cos_beta = (p->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((p->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+		cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+		cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+		mean_curvature += (cot_alpha+cot_beta)*(p_j->Position() - p->Position());
+
+		// Do the division
+		mean_curvature = mean_curvature/(-4*A);
+		// Then we get the final mean curvature of vertex p.
+		//cout << "mean_curvature" << mean_curvature.L2Norm() << endl;
 	}
 }
 

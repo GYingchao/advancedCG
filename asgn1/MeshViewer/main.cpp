@@ -745,6 +745,7 @@ void main(int argc, char **argv) { // add arg[] in Project -> pa1 properties -> 
 	/************************************************************************/
 	/* activate the following code if you finish the corresponding functions*/
  	mesh.ComputeVertexNormals();
+
 	mesh.ComputeVertexCurvatures();
 	/************************************************************************/
 
