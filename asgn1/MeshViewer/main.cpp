@@ -375,9 +375,10 @@ void KeyboardFunc(unsigned char ch, int x, int y) {
 	case 'U':
 		/************************************************************************/
 		/* activate the following code if you finish the corresponding functions*/
-// 		mesh.UmbrellaSmooth();
-// 		mesh.ComputeVertexNormals();
-// 		mesh.ComputeVertexCurvatures();
+		cout << "Do the UmbrellaSmoothing.." << endl;
+ 		mesh.UmbrellaSmooth();
+ 		mesh.ComputeVertexNormals();
+ 		mesh.ComputeVertexCurvatures();
 		/************************************************************************/
 		break;
 	case 's':

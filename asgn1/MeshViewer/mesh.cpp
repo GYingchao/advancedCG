@@ -444,16 +444,34 @@ void Mesh::ComputeVertexNormals()
 void Mesh::UmbrellaSmooth() 
 {
 	// We use either uniform Laplacian L_u or cotangent Laplacian L_c to do the explict smoothing.
+	double lambda = 0.05;
+	Vector3d *Lu = new Vector3d[vList.size()];
 	if(currentWeight == Uniform) {
 		// We do the explict smoothing using L_u
-
+		for(size_t i=0; i<vList.size(); i++) {
+			Vertex* v = vList[i];
+			int k = v->Valence();
+			OneRingVertex iterator(v);
+			Lu[i] = Vector3d(0.0, 0.0, 0.0);
+			for(size_t j=0; j<k; j++) {
+				Lu[i] += iterator.NextVertex() - v;
+			}
+			Lu[i] = Lu[i]/k;
+		}
+		// After computing L_u for each vertex, we do the smoothing
+		for(size_t i=0; i<vList.size(); i++) {
+			Vector3d temp(0.0, 0.0, 0.0);
+			Vertex *curr = vList[i];
+			temp = curr->Position() + lambda*Lu[i];
+			curr->SetPosition(temp);
+		}
 
 	} else {
 		// We do the explict smoothing using L_c
+		
 	}
 
-	// We use L = -2*Hn for testing first:
-
+	cout << "Umbrella smoothing finished." << endl;
 }
 
 void Mesh::ImplicitUmbrellaSmooth()
