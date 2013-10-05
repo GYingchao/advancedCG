@@ -4,6 +4,13 @@
 #include <cstdlib>
 #include <vector>
 #include "vector3.h"
+#define PI 3.1415926
+
+enum Weight
+{
+	Uniform,
+	Cotangent
+};
 
 // classes
 class HEdge;
@@ -180,7 +187,7 @@ public:
 	HEdgeList bheList;		// list of boundary half egdes
 	VertexList vList;		// list of vertices
 	FaceList fList;			// list of faces
-
+	double* curvatures;
 	// constructor & destructors
 	Mesh() { }
 	~Mesh() { Clear(); }
@@ -205,6 +212,7 @@ public:
 		bheList.clear();
 		vList.clear();
 		fList.clear();
+		delete curvatures;
 	}
 
 	Vector3d MinCoord() const {

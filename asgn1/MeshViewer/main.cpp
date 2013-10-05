@@ -5,9 +5,7 @@
 #include "mesh.h"
 #include "matrix.h"
 #include "OpenGLProjector.h"
-
-
-// Enumeration
+extern Weight currentWeight;
 enum EnumDisplayMode { WIREFRAME, HIDDENLINE, FLATSHADED, SMOOTHSHADED, COLORSMOOTHSHADED };
 
 enum Mode 
@@ -16,7 +14,6 @@ enum Mode
 	Selection 
 };
 Mode currentMode = Viewing;
-
 
 // variables
 int displayMode = FLATSHADED;	// current display mode
@@ -59,7 +56,7 @@ void DeleteSelectedVertex(int vertex);
 void DrawBoundaryEdges();
 
 void SetBoundaryBox(const Vector3d & bmin, const Vector3d & bmax) {
-	double PI = 3.14159265358979323846;
+	//double PI = 3.14159265358979323846;
 	double radius = bmax.Distance(bmin);
 	g_center = 0.5 * (bmin+bmax);
 	zNear    = 0.2 * radius / sin(0.5 * g_fov * PI / 180.0);
@@ -366,6 +363,14 @@ void DrawSelectedVertices()
 // GLUT keyboard callback function
 void KeyboardFunc(unsigned char ch, int x, int y) {
 	switch (ch) {
+	case 'c':
+	case 'C':
+		if(currentWeight == Uniform) {
+			currentWeight = Cotangent;
+		} else {
+			currentWeight = Uniform;
+		}
+		break;
 	case 'u':
 	case 'U':
 		/************************************************************************/

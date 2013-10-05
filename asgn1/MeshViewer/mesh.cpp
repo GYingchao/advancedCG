@@ -6,11 +6,13 @@
 #include <fstream>
 #include <cmath>
 #include <float.h>
-#define PI 3.1415926
 using namespace std;
+
+Weight currentWeight = Uniform; // Used to distinguish uniformed Laplacian & contangent weighted Laplacian.
 
 /////////////////////////////////////////
 // helping inline functions
+
 inline double Cot(const Vector3d & p1, const Vector3d & p2, const Vector3d & p3) {
 	Vector3d v1 = p1 - p2;
 	Vector3d v2 = p3 - p2;
@@ -441,9 +443,17 @@ void Mesh::ComputeVertexNormals()
 
 void Mesh::UmbrellaSmooth() 
 {
-	/*************************/
-	/* insert your code here */
-	/*************************/
+	// We use either uniform Laplacian L_u or cotangent Laplacian L_c to do the explict smoothing.
+	if(currentWeight == Uniform) {
+		// We do the explict smoothing using L_u
+
+
+	} else {
+		// We do the explict smoothing using L_c
+	}
+
+	// We use L = -2*Hn for testing first:
+
 }
 
 void Mesh::ImplicitUmbrellaSmooth()
@@ -455,7 +465,7 @@ void Mesh::ImplicitUmbrellaSmooth()
 void Mesh::ComputeVertexCurvatures()
 {
 	// 1 Compute the mean curvature of each vertex
-	double* curvatures = new double[vList.size()];
+	curvatures = new double[vList.size()];
 	for(size_t i=0; i<vList.size(); i++) {
 
 		Vertex* p = vList[i];
