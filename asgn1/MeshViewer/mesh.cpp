@@ -435,7 +435,7 @@ void Mesh::ComputeVertexNormals()
 
 void Mesh::UmbrellaSmooth() 
 {
-output.open("Lc.txt");
+//output.open("Lc.txt");
 	// We use either uniform Laplacian L_u or cotangent Laplacian L_c to do the explict smoothing.
 	double lambda = 0.05;
 	if(currentWeight == Uniform) {
@@ -527,7 +527,7 @@ output.open("Lc.txt");
 
 			// Do the division
 			Lc[i] = Lc[i]/(2*A);
-			output << "Lc[" << i << "]  " << Lc[i] << endl;
+//output << "Lc[" << i << "]  " << Lc[i] << endl;
 		}
 		// After computing L_c for each vertex, we do the smoothing
 		for(size_t i=0; i<vList.size(); i++) {
@@ -537,7 +537,7 @@ output.open("Lc.txt");
 			curr->SetPosition(temp);
 		}
 	}
-output.close();
+//output.close();
 	cout << "Umbrella smoothing finished." << endl;
 }
 
@@ -549,6 +549,7 @@ void Mesh::ImplicitUmbrellaSmooth()
 }
 void Mesh::ComputeVertexCurvatures()
 {
+output.open("curvatures.txt");
 	// 1 Compute the mean curvature of each vertex
 	curvatures = new double[vList.size()];
 	for(size_t i=0; i<vList.size(); i++) {
@@ -623,6 +624,7 @@ void Mesh::ComputeVertexCurvatures()
 		mean_curvature = mean_curvature/(-4*A);
 		// Then we get the final mean curvature of vertex p.
 		curvatures[i] = mean_curvature.L2Norm();
+//output << "Curvature[" << i << "]  " << mean_curvature << endl;
 	}
 
 	// 2 Visualize the curvature by using HSV color space.
@@ -640,5 +642,6 @@ void Mesh::ComputeVertexCurvatures()
 		//cout << "r: " << red << ", g: " << green << ", b: " << blue << endl; 
 		vList[i]->SetColor(Vector3d(red, green, blue));
 	}
+output.close();
 }
 
