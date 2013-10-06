@@ -10,6 +10,8 @@ using namespace std;
 
 Weight currentWeight = Uniform; // Used to distinguish uniformed Laplacian & contangent weighted Laplacian.
 
+ofstream output; // Used to output internal results for testing
+
 /////////////////////////////////////////
 // helping inline functions
 
@@ -363,15 +365,11 @@ void Mesh::ComputeVertexNormals()
 {
 	// Since vertices can be classified into internal or boundary, 
 	// we need to compute each class respectively.
-//ofstream output;
-//output.open("normals.txt");
 
 	// 1 Compute the normals of internal vertices
-//output << "Interior vertex normals: " << endl;
 	for(size_t i=0; i<this->heList.size(); i++) {
 		
 		Vertex* currentVertex  = heList[i]->Start();
-
 		// Use the geometry information to compute t_1 and t_2;
 		Vector3d t_1(0.0, 0.0, 0.0);
 		Vector3d t_2(0.0, 0.0, 0.0);
@@ -390,12 +388,9 @@ void Mesh::ComputeVertexNormals()
 		Vector3d normal = t_1.Cross(t_2);
 		normal /= normal.L2Norm();
 		currentVertex->SetNormal(normal);	
-
-//output << normal << endl;
 	}
 
 	// 2 Compute the normals of boundary vertices
-//output << "Boundary vertex normals: " << endl;
 	for(size_t i=0; i<this->bheList.size(); i++) {
 
 		Vertex* currentVertex = bheList[i]->Start();
@@ -435,26 +430,26 @@ void Mesh::ComputeVertexNormals()
 		Vector3d normal = t_along.Cross(t_across);
 		normal /= normal.L2Norm();
 		currentVertex->SetNormal(normal);
-
-//output << normal << endl;
 	}
-//output.close();
 }
 
 void Mesh::UmbrellaSmooth() 
 {
+output.open("Lc.txt");
 	// We use either uniform Laplacian L_u or cotangent Laplacian L_c to do the explict smoothing.
 	double lambda = 0.05;
-	Vector3d *Lu = new Vector3d[vList.size()];
 	if(currentWeight == Uniform) {
 		// We do the explict smoothing using L_u
+		Vector3d *Lu = new Vector3d[vList.size()];
 		for(size_t i=0; i<vList.size(); i++) {
 			Vertex* v = vList[i];
 			int k = v->Valence();
 			OneRingVertex iterator(v);
 			Lu[i] = Vector3d(0.0, 0.0, 0.0);
+			Vertex *temp;
 			for(size_t j=0; j<k; j++) {
-				Lu[i] += iterator.NextVertex() - v;
+				temp = iterator.NextVertex();
+				Lu[i] += temp->Position() - v->Position();
 			}
 			Lu[i] = Lu[i]/k;
 		}
@@ -465,12 +460,84 @@ void Mesh::UmbrellaSmooth()
 			temp = curr->Position() + lambda*Lu[i];
 			curr->SetPosition(temp);
 		}
-
 	} else {
+		// The following code is quite similar to computing mean curvatures
+		Vector3d *Lc = new Vector3d[vList.size()];
 		// We do the explict smoothing using L_c
-		
-	}
+		for(size_t i=0; i<vList.size(); i++) {
+			Vertex* v = vList[i];
+			int k = v->Valence();
+			Lc[i] = Vector3d(0.0, 0.0, 0.0);
+			double cos_alpha = 0.0, cos_beta = 0.0, cot_alpha = 0.0, cot_beta = 0.0;
+			double A = 0.0;	// A is the sum of all the triangle areas shared vertex p.
+			// We compute the area of triangle by using Heron's formula
+			double s = 0.0;	// S = \frac{1}{2}(a + b + c)
+			double a= 0.0, b = 0.0, c = 0.0; // Three edge lengths of the triangle.
+			Vertex* p_pre, *p_j, *p_nex, *p_0, *p_1;
+			OneRingVertex ring(v);
+			p_0 = ring.NextVertex();
+			p_j = p_0;
+			p_1 = ring.NextVertex();
+			p_nex = p_1;
+			for(int j=1; j<k-1; j++) {
+				p_pre = p_j;
+				p_j = p_nex;
+				p_nex = ring.NextVertex();
 
+				// Calculate the interior triangle areas
+				a = (v->Position() - p_j->Position()).L2Norm();
+				b = (p_j->Position() - p_nex->Position()).L2Norm();
+				c = (p_nex->Position() - v->Position()).L2Norm();
+				s = (a + b + c)/2;
+				A += sqrt(s*(s-a)*(s-b)*(s-c));
+
+				cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+				cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+				cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+				cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+				Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
+			}
+			// Add up the calculation of start and end triangles
+			p_pre = p_j;
+			p_j = p_nex;
+			p_nex = p_0;
+			a = (v->Position() - p_j->Position()).L2Norm();
+			b = (p_j->Position() - p_nex->Position()).L2Norm();
+			c = (p_nex->Position() - v->Position()).L2Norm();
+			s = (a + b + c)/2;
+			A += sqrt(s*(s-a)*(s-b)*(s-c));
+			cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+			cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+			cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+			cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+			Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
+			p_pre = p_j;
+			p_j = p_nex;
+			p_nex = p_1;
+			a = (v->Position() - p_j->Position()).L2Norm();
+			b = (p_j->Position() - p_nex->Position()).L2Norm();
+			c = (p_nex->Position() - v->Position()).L2Norm();
+			s = (a + b + c)/2;
+			A += sqrt(s*(s-a)*(s-b)*(s-c));
+			cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+			cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+			cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+			cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+			Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
+
+			// Do the division
+			Lc[i] = Lc[i]/(2*A);
+			output << "Lc[" << i << "]  " << Lc[i] << endl;
+		}
+		// After computing L_c for each vertex, we do the smoothing
+		for(size_t i=0; i<vList.size(); i++) {
+			Vector3d temp(0.0, 0.0, 0.0);
+			Vertex *curr = vList[i];
+			temp = curr->Position() + lambda*Lc[i];
+			curr->SetPosition(temp);
+		}
+	}
+output.close();
 	cout << "Umbrella smoothing finished." << endl;
 }
 
