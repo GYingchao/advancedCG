@@ -437,7 +437,7 @@ void Mesh::UmbrellaSmooth()
 {
 //output.open("Lc.txt");
 	// We use either uniform Laplacian L_u or cotangent Laplacian L_c to do the explict smoothing.
-	double lambda = 0.05;
+	double lambda = 0.5;
 	if(currentWeight == Uniform) {
 		// We do the explict smoothing using L_u
 		Vector3d *Lu = new Vector3d[vList.size()];
@@ -460,6 +460,7 @@ void Mesh::UmbrellaSmooth()
 			temp = curr->Position() + lambda*Lu[i];
 			curr->SetPosition(temp);
 		}
+		cout << "Umbrella smoothing using uniform Laplacian finished.." << endl;
 	} else {
 		// The following code is quite similar to computing mean curvatures
 		Vector3d *Lc = new Vector3d[vList.size()];
@@ -508,15 +509,7 @@ void Mesh::UmbrellaSmooth()
 			cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
 			sum_w += cot_alpha+cot_beta;
 			Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
-<<<<<<< HEAD
 			Lc[i] = Lc[i]/sum_w;
-output << "Lc[" << i << "]  " << Lc[i] << endl;
-=======
-
-			// Do the division
-			Lc[i] = Lc[i]/(2*A);
-//output << "Lc[" << i << "]  " << Lc[i] << endl;
->>>>>>> testCurvature
 		}
 		// After computing L_c for each vertex, we do the smoothing
 		for(size_t i=0; i<vList.size(); i++) {
@@ -525,9 +518,9 @@ output << "Lc[" << i << "]  " << Lc[i] << endl;
 			temp = curr->Position() + lambda*Lc[i];
 			curr->SetPosition(temp);
 		}
+		cout << "Umbrella smoothing using cotangent weight Laplacian finished.." << endl;
 	}
 //output.close();
-	cout << "Umbrella smoothing finished." << endl;
 }
 
 void Mesh::ImplicitUmbrellaSmooth()
