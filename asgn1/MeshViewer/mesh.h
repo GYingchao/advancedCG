@@ -152,6 +152,15 @@ public:
 		while (curr=ring.NextVertex()) count++;
 		return count;
 	}
+
+	bool equalsTo(Vertex* v) {
+		Vector3d v1 = this->Position();
+		Vector3d v2 = v->Position();
+		const double *d1 = v1.ToArray();
+		const double *d2 = v2.ToArray();
+		return (d1[0]==d2[0] && d1[1]==d2[1] && d1[2]==d2[2]);
+	}
+
 };
 
 ////////// class Face //////////

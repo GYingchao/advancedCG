@@ -525,9 +525,25 @@ void Mesh::UmbrellaSmooth()
 
 void Mesh::ImplicitUmbrellaSmooth()
 {
-	/*************************/
-	/* insert your code here */
-	/*************************/
+	double lambda = 1.0;
+	Vertex *test1 = vList[3];
+	Vertex *test2 = vList[5];
+	Vertex *test3 = vList[3];
+	cout << test1->equalsTo(test2) << endl;
+	cout << test1->equalsTo(test3) << endl;
+	cout << test2->equalsTo(test3) << endl;
+	cout << test3->equalsTo(test3) << endl;
+	if(currentWeight == Uniform) {
+		// We use uniform Laplacian operator in this case
+		for(size_t i=0; i<vList.size(); i++) {
+			for(size_t j=0; j<vList.size(); j++) {
+
+			}
+		}
+	} else {
+		// We use cotangent weighted Laplacian operator in this case
+
+	}
 }
 void Mesh::ComputeVertexCurvatures()
 {
