@@ -161,6 +161,14 @@ public:
 		return (d1[0]==d2[0] && d1[1]==d2[1] && d1[2]==d2[2]);
 	}
 
+	bool isIncidentTo(Vertex* v) {
+		OneRingVertex iterator(this);
+		Vertex *temp = NULL;
+		while(temp=iterator.NextVertex()) {
+			if(v->equalsTo(temp)) return true;
+		}
+		return false;
+	}
 };
 
 ////////// class Face //////////

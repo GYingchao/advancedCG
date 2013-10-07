@@ -527,12 +527,13 @@ void Mesh::ImplicitUmbrellaSmooth()
 {
 	double lambda = 1.0;
 	Vertex *test1 = vList[3];
-	Vertex *test2 = vList[5];
-	Vertex *test3 = vList[3];
-	cout << test1->equalsTo(test2) << endl;
-	cout << test1->equalsTo(test3) << endl;
-	cout << test2->equalsTo(test3) << endl;
-	cout << test3->equalsTo(test3) << endl;
+	OneRingVertex iterator(test1);
+	int k = test1->Valence();
+	for(size_t i=0; i<k; i++) {
+		cout << test1->isIncidentTo(iterator.NextVertex()) << endl;
+	}
+	cout << test1->isIncidentTo(new Vertex()) << endl;
+	
 	if(currentWeight == Uniform) {
 		// We use uniform Laplacian operator in this case
 		for(size_t i=0; i<vList.size(); i++) {
