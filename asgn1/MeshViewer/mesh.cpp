@@ -526,21 +526,24 @@ void Mesh::UmbrellaSmooth()
 void Mesh::ImplicitUmbrellaSmooth()
 {
 	double lambda = 1.0;
-	Vertex *test1 = vList[3];
-	OneRingVertex iterator(test1);
-	int k = test1->Valence();
-	for(size_t i=0; i<k; i++) {
-		cout << test1->isIncidentTo(iterator.NextVertex()) << endl;
-	}
-	cout << test1->isIncidentTo(new Vertex()) << endl;
-	
+	Matrix *A = new Matrix(vList.size(), vList.size());
 	if(currentWeight == Uniform) {
 		// We use uniform Laplacian operator in this case
+		// First we construct matrix A = I-\lambda*L
 		for(size_t i=0; i<vList.size(); i++) {
 			for(size_t j=0; j<vList.size(); j++) {
-
+				if(i==j) {
+					A->AddElement(i, j, 1-lambda);
+				} else if(vList[i]->isIncidentTo(vList[j])) {
+					A->AddElement(i, j, -1/vList[i]->Valence());
+				} else {
+					A->AddElement(i, j, 0.0);
+				}
 			}
 		}
+		// Then we perform Conjugated Gradient Method for each dimension
+		
+		
 	} else {
 		// We use cotangent weighted Laplacian operator in this case
 

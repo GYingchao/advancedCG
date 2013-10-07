@@ -138,9 +138,7 @@ public:
 	/**********************************************/
 	void BCG(double* b, double* x)
 	{
-		/*************************/
-		/* insert your code here */
-		/*************************/
+		
 	}
 
 	// friend operators
