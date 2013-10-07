@@ -469,10 +469,8 @@ output.open("Lc.txt");
 			int k = v->Valence();
 			Lc[i] = Vector3d(0.0, 0.0, 0.0);
 			double cos_alpha = 0.0, cos_beta = 0.0, cot_alpha = 0.0, cot_beta = 0.0;
-			double A = 0.0;	// A is the sum of all the triangle areas shared vertex p.
+			double sum_w = 0.0;	// sum_w is the sum of all the weights of points shared vertex p.
 			// We compute the area of triangle by using Heron's formula
-			double s = 0.0;	// S = \frac{1}{2}(a + b + c)
-			double a= 0.0, b = 0.0, c = 0.0; // Three edge lengths of the triangle.
 			Vertex* p_pre, *p_j, *p_nex, *p_0, *p_1;
 			OneRingVertex ring(v);
 			p_0 = ring.NextVertex();
@@ -484,50 +482,34 @@ output.open("Lc.txt");
 				p_j = p_nex;
 				p_nex = ring.NextVertex();
 
-				// Calculate the interior triangle areas
-				a = (v->Position() - p_j->Position()).L2Norm();
-				b = (p_j->Position() - p_nex->Position()).L2Norm();
-				c = (p_nex->Position() - v->Position()).L2Norm();
-				s = (a + b + c)/2;
-				A += sqrt(s*(s-a)*(s-b)*(s-c));
-
 				cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
 				cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
 				cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
 				cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+				sum_w += cot_alpha + cot_beta;
 				Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
 			}
 			// Add up the calculation of start and end triangles
 			p_pre = p_j;
 			p_j = p_nex;
 			p_nex = p_0;
-			a = (v->Position() - p_j->Position()).L2Norm();
-			b = (p_j->Position() - p_nex->Position()).L2Norm();
-			c = (p_nex->Position() - v->Position()).L2Norm();
-			s = (a + b + c)/2;
-			A += sqrt(s*(s-a)*(s-b)*(s-c));
 			cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
 			cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
 			cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
 			cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+			sum_w += cot_alpha+cot_beta;
 			Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
 			p_pre = p_j;
 			p_j = p_nex;
 			p_nex = p_1;
-			a = (v->Position() - p_j->Position()).L2Norm();
-			b = (p_j->Position() - p_nex->Position()).L2Norm();
-			c = (p_nex->Position() - v->Position()).L2Norm();
-			s = (a + b + c)/2;
-			A += sqrt(s*(s-a)*(s-b)*(s-c));
 			cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
 			cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
 			cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
 			cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+			sum_w += cot_alpha+cot_beta;
 			Lc[i] += (cot_alpha+cot_beta)*(p_j->Position() - v->Position());
-
-			// Do the division
-			Lc[i] = Lc[i]/(2*A);
-			output << "Lc[" << i << "]  " << Lc[i] << endl;
+			Lc[i] = Lc[i]/sum_w;
+output << "Lc[" << i << "]  " << Lc[i] << endl;
 		}
 		// After computing L_c for each vertex, we do the smoothing
 		for(size_t i=0; i<vList.size(); i++) {

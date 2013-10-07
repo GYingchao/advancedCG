@@ -358,8 +358,6 @@ void DrawSelectedVertices()
 	glEnd();
 }
 
-
-
 // GLUT keyboard callback function
 void KeyboardFunc(unsigned char ch, int x, int y) {
 	switch (ch) {
