@@ -8,6 +8,7 @@
 #include <float.h>
 using namespace std;
 
+//Matrix A(5000, 5000);
 Weight currentWeight = Uniform; // Used to distinguish uniformed Laplacian & contangent weighted Laplacian.
 
 ofstream output; // Used to output internal results for testing
@@ -525,7 +526,7 @@ void Mesh::UmbrellaSmooth()
 
 void Mesh::ImplicitUmbrellaSmooth()
 {
-output.open("vertices.txt");
+//output.open("A.txt");
 	double lambda = 1.0;
 	Matrix *A = new Matrix(vList.size(), vList.size());
 	if(currentWeight == Uniform) {
@@ -534,45 +535,121 @@ output.open("vertices.txt");
 		for(size_t i=0; i<vList.size(); i++) {
 			for(size_t j=0; j<vList.size(); j++) {
 				if(i==j) {
-					A->AddElement(i, j, 1-lambda);
+					A->AddElement(i, j, 1+lambda);
 				} else if(vList[i]->isIncidentTo(vList[j])) {
-					A->AddElement(i, j, -1/vList[i]->Valence());
+					A->AddElement(i, j, -lambda/(vList[i]->Valence()));
 				} else {
 					A->AddElement(i, j, 0.0);
 				}
 			}
 		}
 		A->SortMatrix();
-		// Then we perform Conjugated Gradient Method for each dimension
+		cout << "Uniform implicit smoothing is processing.." << endl;
+	} else {
+		// We use cotangent weighted Laplacian operator in this case
+		// We use cotangent Laplacian operator in this case
+		// First we construct matrix A = I-\lambda*Lc
+		for(size_t i=0; i<vList.size(); i++) {
+			for(size_t j=0; j<vList.size(); j++) {
+				if(i==j) {
+					A->AddElement(i, j, 1+lambda);
+				} else if(vList[i]->isIncidentTo(vList[j])) {
+					//------------------------------------------------------
+					double cot_alphaj = 0.0, cot_betaj = 0.0; 
+					Vertex* v = vList[i];
+					Vertex* vj = vList[j];
+					int k = v->Valence();
+					double cos_alpha = 0.0, cos_beta = 0.0, cot_alpha = 0.0, cot_beta = 0.0;
+					double sum_w = 0.0;	// sum_w is the sum of all the weights of points shared vertex p.
+					// We compute the area of triangle by using Heron's formula
+					Vertex* p_pre, *p_j, *p_nex, *p_0, *p_1;
+					OneRingVertex ring(v);
+					p_0 = ring.NextVertex();
+					p_j = p_0;
+					p_1 = ring.NextVertex();
+					p_nex = p_1;
+					for(int j=1; j<k-1; j++) {
+						p_pre = p_j;
+						p_j = p_nex;
+						p_nex = ring.NextVertex();
+
+						cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+						cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+						cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+						cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+						sum_w += cot_alpha + cot_beta;
+						if(p_j->equalsTo(vj)) {
+							cot_alphaj = cot_alpha;
+							cot_betaj = cot_beta;
+						}
+					}
+					// Add up the calculation of start and end triangles
+					p_pre = p_j;
+					p_j = p_nex;
+					p_nex = p_0;
+					cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+					cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+					cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+					cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+					if(p_j->equalsTo(vj)) {
+						cot_alphaj = cot_alpha;
+						cot_betaj = cot_beta;
+					}
+					sum_w += cot_alpha+cot_beta;
+					p_pre = p_j;
+					p_j = p_nex;
+					p_nex = p_1;
+					cos_alpha = (v->Position()-p_nex->Position()).Dot(p_j->Position()-p_nex->Position()) / ((v->Position()-p_nex->Position()).L2Norm()*(p_j->Position()-p_nex->Position()).L2Norm());
+					cos_beta = (v->Position()-p_pre->Position()).Dot(p_j->Position()-p_pre->Position()) / ((v->Position()-p_pre->Position()).L2Norm()*(p_j->Position()-p_pre->Position()).L2Norm());
+					cot_alpha = cos_alpha / sqrt(1-cos_alpha*cos_alpha);
+					cot_beta = cos_beta / sqrt(1 - cos_beta*cos_beta);
+					if(p_j->equalsTo(vj)) {
+						cot_alphaj = cot_alpha;
+						cot_betaj = cot_beta;
+					}
+					sum_w += cot_alpha+cot_beta;
+					double value = (cot_alphaj + cot_betaj)/sum_w;
+					//------------------------------------------------------
+					A->AddElement(i, j, -lambda*value);
+				} else {
+					A->AddElement(i, j, 0.0);
+				}
+			}
+		}
+		A->SortMatrix();
+		cout << "Cotangent implicit smoothing is processing.." << endl;
+	}
+
+	// Then we perform Conjugated Gradient Method for each dimension
 		// Dimension X
 		double *x_0 = new double[vList.size()];
 		double *x = new double[vList.size()];
 		for(size_t i=0; i<vList.size(); i++) {
 			x_0[i] = vList[i]->Position().X();
-			x[i] = x_0[i];
+			x[i] = 0.0;
 		}
-		A->BCG(x_0, x, 10, 1.0);
+		A->BCG(x_0, x, 1000, 0.000000001);
 		// Dimension Y
 		double *y_0 = new double[vList.size()];
 		double *y = new double[vList.size()];
 		for(size_t i=0; i<vList.size(); i++) {
 			y_0[i] = vList[i]->Position().Y();
-			y[i] = y_0[i];
+			y[i] = 0.0;
 		}
-		A->BCG(y_0, y, 10, 1.0);
+		A->BCG(y_0, y, 1000, 0.000000001);
 		// Dimension Z
 		double *z_0 = new double[vList.size()];
 		double *z = new double[vList.size()];
 		for(size_t i=0; i<vList.size(); i++) {
 			z_0[i] = vList[i]->Position().Z();
-			z[i] = z_0[i];
+			z[i] = 0.0;
 		}
-		A->BCG(z_0, z, 10, 1.0);
+		A->BCG(z_0, z, 1000, 0.000000001);
 		// Apply the effect into vertices
 		for(size_t i=0; i<vList.size(); i++) {
-			output << "Original Position: " << vList[i]->Position() << endl;
-			//vList[i]->SetPosition(Vector3d(x[i], y[i], z[i]));
-			output << "New Position: " << Vector3d(x[i], y[i], z[i])<< endl;
+//output << "Original Position: " << vList[i]->Position() << endl;
+			vList[i]->SetPosition(Vector3d(x[i], y[i], z[i]));
+//output << "New Position: " << Vector3d(x[i], y[i], z[i])<< endl;
 		}
 		delete x_0;
 		delete x;
@@ -580,12 +657,8 @@ output.open("vertices.txt");
 		delete y;
 		delete z_0;
 		delete z;
-		cout << "implicit uniform smoothing done .." << endl;
-	} else {
-		// We use cotangent weighted Laplacian operator in this case
-
-	}
-output.close();
+		cout << "implicit smoothing done .." << endl;
+//output.close();
 }
 void Mesh::ComputeVertexCurvatures()
 {
