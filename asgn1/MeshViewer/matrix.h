@@ -149,7 +149,7 @@ public:
 		double beta = 0.0;
 		// For initial 
 		this->Multiply(x, temp1);
-		for()
+		//for()
 		for(size_t i=0; i<m; i++) {
 			r[i] = b[i] - temp1[i];
 			d[i] = r[i];

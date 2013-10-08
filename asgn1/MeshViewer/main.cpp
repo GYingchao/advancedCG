@@ -754,7 +754,7 @@ void main(int argc, char **argv) { // add arg[] in Project -> pa1 properties -> 
 	/************************************************************************/
 
 	// Test the implicit matrix 
-	mesh.ImplicitUmbrellaSmooth();
+	//mesh.ImplicitUmbrellaSmooth();
 
 	glutMainLoop();
 }

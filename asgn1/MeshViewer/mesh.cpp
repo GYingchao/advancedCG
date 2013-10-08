@@ -437,11 +437,11 @@ void Mesh::UmbrellaSmooth()
 {
 //output.open("Lc.txt");
 	// We use either uniform Laplacian L_u or cotangent Laplacian L_c to do the explict smoothing.
-	double lambda = 0.5;
+	double lambda = 1.0;
 	if(currentWeight == Uniform) {
 		// We do the explict smoothing using L_u
 		Vector3d *Lu = new Vector3d[vList.size()];
-		for(size_t i=0; i<vList.size(); i++) {
+		for(size_t i=0; i<vList.size() && (!vList[i]->IsBoundary()); i++) {
 			Vertex* v = vList[i];
 			int k = v->Valence();
 			OneRingVertex iterator(v);
@@ -454,7 +454,7 @@ void Mesh::UmbrellaSmooth()
 			Lu[i] = Lu[i]/k;
 		}
 		// After computing L_u for each vertex, we do the smoothing
-		for(size_t i=0; i<vList.size(); i++) {
+		for(size_t i=0; i<vList.size() && (!vList[i]->IsBoundary()); i++) {
 			Vector3d temp(0.0, 0.0, 0.0);
 			Vertex *curr = vList[i];
 			temp = curr->Position() + lambda*Lu[i];
@@ -465,7 +465,7 @@ void Mesh::UmbrellaSmooth()
 		// The following code is quite similar to computing mean curvatures
 		Vector3d *Lc = new Vector3d[vList.size()];
 		// We do the explict smoothing using L_c
-		for(size_t i=0; i<vList.size(); i++) {
+		for(size_t i=0; i<vList.size() && (!vList[i]->IsBoundary()); i++) {
 			Vertex* v = vList[i];
 			int k = v->Valence();
 			Lc[i] = Vector3d(0.0, 0.0, 0.0);
@@ -512,7 +512,7 @@ void Mesh::UmbrellaSmooth()
 			Lc[i] = Lc[i]/sum_w;
 		}
 		// After computing L_c for each vertex, we do the smoothing
-		for(size_t i=0; i<vList.size(); i++) {
+		for(size_t i=0; i<vList.size() && (!vList[i]->IsBoundary()); i++) {
 			Vector3d temp(0.0, 0.0, 0.0);
 			Vertex *curr = vList[i];
 			temp = curr->Position() + lambda*Lc[i];
