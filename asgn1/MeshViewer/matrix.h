@@ -138,24 +138,25 @@ public:
 	/**********************************************/
 	void BCG(double* b, double* x, int maxIter, double tolerance)
 	{
-		double *temp1 = new double[this->m];
-		for(size_t i=0; i<this->m; i++) {
+		double *temp1 = new double[m];
+		for(size_t i=0; i<m; i++) {
 			temp1[i] = 0.0;
 		}
-		double *temp2 = new double[this->m];
-		double *r = new double[this->m];
-		double *d = new double[this->m];
+		double *temp2 = new double[m];
+		double *r = new double[m];
+		double *d = new double[m];
 		double alpha = 0.0;
 		double beta = 0.0;
 		// For initial 
 		this->Multiply(x, temp1);
-		for(size_t i=0; i<this->m; i++) {
+		for()
+		for(size_t i=0; i<m; i++) {
 			r[i] = b[i] - temp1[i];
 			d[i] = r[i];
 		}
 		this->Multiply(d, temp2);
 		double a_no = 0.0, a_deno = 0.0;
-		for(size_t i=0; i<this->m; i++) {
+		for(size_t i=0; i<m; i++) {
 			a_no += r[i]*r[i];
 			a_deno += d[i]*temp2[i];
 		}
@@ -163,7 +164,7 @@ public:
 		// Start to iterate
 		for(size_t t=1; t<=maxIter; t++) {
 			double b_no = 0.0, b_deno = 0.0;
-			for(size_t i=0; i<this->m; i++) {
+			for(size_t i=0; i<m; i++) {
 				// X(t+1) = X(t) + alpha(t)*d(t)
 				x[i] = x[i] + alpha*d[i];
 				// beta(t+1) = r(t+1)^2/r(t)^2
@@ -179,7 +180,7 @@ public:
 			this->Multiply(d, temp2);
 			// Update alpha
 			double a_no = 0.0, a_deno = 0.0;
-			for(size_t i=0; i<this->m; i++) {
+			for(size_t i=0; i<m; i++) {
 				a_no += r[i]*r[i];
 				a_deno += d[i]*temp2[i];
 			}

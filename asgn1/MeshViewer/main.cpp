@@ -383,7 +383,7 @@ void KeyboardFunc(unsigned char ch, int x, int y) {
 	case 'S':
 		/************************************************************************/
 		/* activate the following code if you finish the corresponding functions*/
- 		mesh.ImplicitUmbrellaSmooth();
+ 		//mesh.ImplicitUmbrellaSmooth();
  		//mesh.ComputeVertexNormals();
  		//mesh.ComputeVertexCurvatures();
 		/************************************************************************/
@@ -752,6 +752,9 @@ void main(int argc, char **argv) { // add arg[] in Project -> pa1 properties -> 
 
 	mesh.ComputeVertexCurvatures();
 	/************************************************************************/
+
+	// Test the implicit matrix 
+	mesh.ImplicitUmbrellaSmooth();
 
 	glutMainLoop();
 }

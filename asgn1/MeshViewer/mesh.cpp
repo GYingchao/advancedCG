@@ -525,6 +525,7 @@ void Mesh::UmbrellaSmooth()
 
 void Mesh::ImplicitUmbrellaSmooth()
 {
+output.open("vertices.txt");
 	double lambda = 1.0;
 	Matrix *A = new Matrix(vList.size(), vList.size());
 	if(currentWeight == Uniform) {
@@ -542,18 +543,53 @@ void Mesh::ImplicitUmbrellaSmooth()
 			}
 		}
 		A->SortMatrix();
-		
 		// Then we perform Conjugated Gradient Method for each dimension
-		
+		// Dimension X
+		double *x_0 = new double[vList.size()];
+		double *x = new double[vList.size()];
+		for(size_t i=0; i<vList.size(); i++) {
+			x_0[i] = vList[i]->Position().X();
+			x[i] = x_0[i];
+		}
+		A->BCG(x_0, x, 10, 1.0);
+		// Dimension Y
+		double *y_0 = new double[vList.size()];
+		double *y = new double[vList.size()];
+		for(size_t i=0; i<vList.size(); i++) {
+			y_0[i] = vList[i]->Position().Y();
+			y[i] = y_0[i];
+		}
+		A->BCG(y_0, y, 10, 1.0);
+		// Dimension Z
+		double *z_0 = new double[vList.size()];
+		double *z = new double[vList.size()];
+		for(size_t i=0; i<vList.size(); i++) {
+			z_0[i] = vList[i]->Position().Z();
+			z[i] = z_0[i];
+		}
+		A->BCG(z_0, z, 10, 1.0);
+		// Apply the effect into vertices
+		for(size_t i=0; i<vList.size(); i++) {
+			output << "Original Position: " << vList[i]->Position() << endl;
+			//vList[i]->SetPosition(Vector3d(x[i], y[i], z[i]));
+			output << "New Position: " << Vector3d(x[i], y[i], z[i])<< endl;
+		}
+		delete x_0;
+		delete x;
+		delete y_0;
+		delete y;
+		delete z_0;
+		delete z;
+		cout << "implicit uniform smoothing done .." << endl;
 	} else {
 		// We use cotangent weighted Laplacian operator in this case
 
 	}
-
+output.close();
 }
 void Mesh::ComputeVertexCurvatures()
 {
-output.open("curvatures.txt");
+//output.open("curvatures.txt");
 	// 1 Compute the mean curvature of each vertex
 	curvatures = new double[vList.size()];
 	for(size_t i=0; i<vList.size(); i++) {
@@ -646,6 +682,6 @@ output.open("curvatures.txt");
 		//cout << "r: " << red << ", g: " << green << ", b: " << blue << endl; 
 		vList[i]->SetColor(Vector3d(red, green, blue));
 	}
-output.close();
+//output.close();
 }
 
