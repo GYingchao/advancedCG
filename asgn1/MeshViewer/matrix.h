@@ -136,10 +136,61 @@ public:
 	/* function: BCG                              */
 	/* description: solve Ax = b for unknowns x   */
 	/**********************************************/
-	void BCG(double* b, double* x)
+	void BCG(double* b, double* x, int maxIter, double tolerance)
 	{
-		
-	}
+		double *temp1 = new double[this->m];
+		for(size_t i=0; i<this->m; i++) {
+			temp1[i] = 0.0;
+		}
+		double *temp2 = new double[this->m];
+		double *r = new double[this->m];
+		double *d = new double[this->m];
+		double alpha = 0.0;
+		double beta = 0.0;
+		// For initial 
+		this->Multiply(x, temp1);
+		for(size_t i=0; i<this->m; i++) {
+			r[i] = b[i] - temp1[i];
+			d[i] = r[i];
+		}
+		this->Multiply(d, temp2);
+		double a_no = 0.0, a_deno = 0.0;
+		for(size_t i=0; i<this->m; i++) {
+			a_no += r[i]*r[i];
+			a_deno += d[i]*temp2[i];
+		}
+		alpha = a_no/a_deno;
+		// Start to iterate
+		for(size_t t=1; t<=maxIter; t++) {
+			double b_no = 0.0, b_deno = 0.0;
+			for(size_t i=0; i<this->m; i++) {
+				// X(t+1) = X(t) + alpha(t)*d(t)
+				x[i] = x[i] + alpha*d[i];
+				// beta(t+1) = r(t+1)^2/r(t)^2
+				b_deno += r[i]*r[i];
+				// r(t+1) = r(t) - alpha(t)Ad(t)
+				r[i] = r[i] - alpha*temp2[i];
+				b_no += r[i]*r[i];
+				beta = b_no/b_deno;
+				// d(t+1) = r(t+1) + beta(t+1)d(t)
+				d[i] = r[i] + beta*d[i];
+			}
+			// Ad(t+1)
+			this->Multiply(d, temp2);
+			// Update alpha
+			double a_no = 0.0, a_deno = 0.0;
+			for(size_t i=0; i<this->m; i++) {
+				a_no += r[i]*r[i];
+				a_deno += d[i]*temp2[i];
+			}
+			// alpha(t+1) = r(t+1)^2/d(t+1)^T A d(t+1)
+			alpha = a_no/a_deno;
+		}
+		delete temp1;
+		delete temp2;
+		delete r;
+		delete d;
+ 	}
 
 	// friend operators
 	friend ostream & operator<< (ostream & out, const Matrix & r) 

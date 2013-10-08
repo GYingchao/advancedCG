@@ -541,13 +541,15 @@ void Mesh::ImplicitUmbrellaSmooth()
 				}
 			}
 		}
-		// Then we perform Conjugated Gradient Method for each dimension
+		A->SortMatrix();
 		
+		// Then we perform Conjugated Gradient Method for each dimension
 		
 	} else {
 		// We use cotangent weighted Laplacian operator in this case
 
 	}
+
 }
 void Mesh::ComputeVertexCurvatures()
 {

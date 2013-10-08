@@ -384,8 +384,8 @@ void KeyboardFunc(unsigned char ch, int x, int y) {
 		/************************************************************************/
 		/* activate the following code if you finish the corresponding functions*/
  		mesh.ImplicitUmbrellaSmooth();
- 		mesh.ComputeVertexNormals();
- 		mesh.ComputeVertexCurvatures();
+ 		//mesh.ComputeVertexNormals();
+ 		//mesh.ComputeVertexCurvatures();
 		/************************************************************************/
 		break;
 	case '1':	// key '1'
