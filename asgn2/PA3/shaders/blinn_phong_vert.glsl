@@ -53,7 +53,17 @@ void pointLight(in int i, in vec3 normal, in vec3 eye, in vec3 ecPosition3)
     Diffuse  += gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse * dot_product;
 
 	//Then we compute the specular lighting component
-    Specular += 0;
+	float specDot;
+	//	Visibility test (Whether the angle between N and L are more than 90 degree)
+	if (dot(normal, L) < 0.0) specDot = 0.0;
+	else {
+		vec3 V = normalize(eye - ecPosition3);
+		vec3 H = normalize(L + V);
+		specDot = dot(normal, H);
+		if(specDot <= 0.0) specDot = 0.0;
+		else specDot = pow(specDot, gl_FrontMaterial.shininess);
+	} 
+    Specular += gl_FrontMaterial.specular * gl_LightSource[i].specular * specDot;
 }
 
 void main()
@@ -82,7 +92,7 @@ void main()
     pointLight(1, normal, eye, ecPosition3);
         
     // TODO(1): Add ambient, diffuse and specular contributions to equation below.
-    vec4 color = gl_FrontLightModelProduct.sceneColor + Ambient + Diffuse;
+    vec4 color = gl_FrontLightModelProduct.sceneColor + Ambient + Diffuse + Specular;
         
 	// Clamp color to [0, 1]
     color = clamp( color, 0.0, 1.0 );
