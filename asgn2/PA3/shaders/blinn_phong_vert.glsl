@@ -40,8 +40,19 @@ void pointLight(in int i, in vec3 normal, in vec3 eye, in vec3 ecPosition3)
     //   ecPosition3: eye(view) space position of the shaded vertex
 
 	//First we compute the ambient constribution
-    Ambient  += gl_FrontMaterial.ambient * (gl_LightSource[1].ambient + gl_LightSource[2].ambient);
-    Diffuse  += 0;
+    Ambient  += gl_FrontMaterial.ambient * gl_LightSource[i].ambient;
+
+	//Then we compute the diffuse lighting
+	//	Assume default light source position is in eye space.
+	//vec4 ls_ecPosition = gl_ModelViewMatrix * gl_LightSource[i].position;
+	//vec3 ls_ecPosition3 = (vec3(ls_ecPosition)) / ls_ecPosition.w;
+	vec3 ls_ecPosition3 = (vec3(gl_LightSource[i].position)) / gl_LightSource[i].position.w;
+	vec3 L = normalize(ls_ecPosition3 - ecPosition3);
+	float dot_product = dot(normal, L);
+	if(dot_product < 0.0) dot_product = 0.0;
+    Diffuse  += gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse * dot_product;
+
+	//Then we compute the specular lighting component
     Specular += 0;
 }
 
@@ -71,7 +82,7 @@ void main()
     pointLight(1, normal, eye, ecPosition3);
         
     // TODO(1): Add ambient, diffuse and specular contributions to equation below.
-    vec4 color = gl_FrontLightModelProduct.sceneColor + Ambient;
+    vec4 color = gl_FrontLightModelProduct.sceneColor + Ambient + Diffuse;
         
 	// Clamp color to [0, 1]
     color = clamp( color, 0.0, 1.0 );
