@@ -94,13 +94,13 @@ void main()
     vec3 eye = vec3 (0.0, 0.0, 1.0);
     
     // Compute point light contributions
-    pointLight(0, normal, eye, ecPosition3);
-    pointLight(1, normal, eye, ecPosition3);
+    pointLight(0, n, eye, ecPosition3);
+    pointLight(1, n, eye, ecPosition3);
         
     // TODO(1): Add ambient, diffuse and specular contributions to equation below.
    vec4 color = gl_FrontLightModelProduct.sceneColor + gl_FrontMaterial.ambient*Ambient + gl_FrontMaterial.diffuse*Diffuse + gl_FrontMaterial.specular*Specular;
         
 	// Clamp color to [0, 1]
-    color = clamp( color, 0.0, 1.0 );
-    gl_FragColor = color;
+    gl_FragColor = clamp(color, 0.0, 1.0 );
+    
 }
