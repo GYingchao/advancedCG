@@ -115,5 +115,10 @@ void main()
     // TODO(2): sample the texture color from "colorMap" using the 
     //       passed down texture coordinate gl_TexCoord[0], and
     //       modulate the interpolated lighting color by it.
-    gl_FragColor = gl_Color;
+	//gl_FragColor = texture2D(colorMap, vec2(gl_TexCoord[0]));
+	float alpha = 0.8;
+    //gl_FragColor = gl_Color * alpha + texture2D(colorMap, vec2(gl_TexCoord[0])) * (1-alpha);
+	vec4 texture_color = clamp(texture2D(colorMap, vec2(gl_TexCoord[0])), 0.0, 1.0);
+	gl_FragColor = clamp(gl_Color * alpha + texture_color * (1-alpha), 0.0, 1.0);
+	//gl_FragColor = clamp(color, 0.0, 1.0);
 }
