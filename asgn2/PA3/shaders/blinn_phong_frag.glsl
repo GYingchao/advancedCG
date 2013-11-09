@@ -48,6 +48,31 @@ vec4 Specular;
 void pointLight(in int i, in vec3 normal, in vec3 eye, in vec3 ecPosition3)
 {
     // TODO(3): Copy the completed per-vertex point light computation to here
+	//First we compute the ambient constribution
+    Ambient  += gl_FrontMaterial.ambient * gl_LightSource[i].ambient;
+
+	//Then we compute the diffuse lighting
+	//	Assume default light source position is in eye space.
+	//vec4 ls_ecPosition = gl_ModelViewMatrix * gl_LightSource[i].position;
+	//vec3 ls_ecPosition3 = (vec3(ls_ecPosition)) / ls_ecPosition.w;
+	vec3 ls_ecPosition3 = (vec3(gl_LightSource[i].position)) / gl_LightSource[i].position.w;
+	vec3 L = normalize(ls_ecPosition3 - ecPosition3);
+	float dot_product = dot(normal, L);
+	if(dot_product < 0.0) dot_product = 0.0;
+    Diffuse  += gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse * dot_product;
+
+	//Then we compute the specular lighting component
+	float specDot;
+	//	Visibility test (Whether the angle between N and L are more than 90 degree)
+	if (dot(normal, L) < 0.0) specDot = 0.0;
+	else {
+		vec3 V = normalize(eye - ecPosition3);
+		vec3 H = normalize(L + V);
+		specDot = dot(normal, H);
+		if(specDot <= 0.0) specDot = 0.0;
+		else specDot = pow(specDot, gl_FrontMaterial.shininess);
+	} 
+    Specular += gl_FrontMaterial.specular * gl_LightSource[i].specular * specDot;
 }
 
 
@@ -61,5 +86,20 @@ void main()
     //      Important difference: Perform the texture lookup and modulate by the 
     //      lighting result *prior to* adding the specular component.
 
-    gl_FragColor = vec4(0,0,0,0);
+	// Clear the light intensity accumulators
+    Ambient  = vec4 (0.0);
+    Diffuse  = vec4 (0.0);
+    Specular = vec4 (0.0);
+    vec3 eye = vec3 (0.0, 0.0, 1.0);
+    
+    // Compute point light contributions
+    pointLight(0, normal, eye, ecPosition3);
+    pointLight(1, normal, eye, ecPosition3);
+        
+    // TODO(1): Add ambient, diffuse and specular contributions to equation below.
+    vec4 color = gl_FrontLightModelProduct.sceneColor + Ambient + Diffuse + Specular;
+        
+	// Clamp color to [0, 1]
+    color = clamp( color, 0.0, 1.0 );
+    gl_FragColor = color;
 }
