@@ -48,8 +48,9 @@ vec4 Specular;
 void pointLight(in int i, in vec3 normal, in vec3 eye, in vec3 ecPosition3)
 {
     // TODO(3): Copy the completed per-vertex point light computation to here
+	
 	//First we compute the ambient constribution
-    Ambient  += gl_FrontMaterial.ambient * gl_LightSource[i].ambient;
+    Ambient  += gl_LightSource[i].ambient;
 
 	//Then we compute the diffuse lighting
 	//	Assume default light source position is in eye space.
@@ -59,7 +60,7 @@ void pointLight(in int i, in vec3 normal, in vec3 eye, in vec3 ecPosition3)
 	vec3 L = normalize(ls_ecPosition3 - ecPosition3);
 	float dot_product = dot(normal, L);
 	if(dot_product < 0.0) dot_product = 0.0;
-    Diffuse  += gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse * dot_product;
+    Diffuse  += gl_LightSource[i].diffuse * dot_product;
 
 	//Then we compute the specular lighting component
 	float specDot;
@@ -72,7 +73,7 @@ void pointLight(in int i, in vec3 normal, in vec3 eye, in vec3 ecPosition3)
 		if(specDot <= 0.0) specDot = 0.0;
 		else specDot = pow(specDot, gl_FrontMaterial.shininess);
 	} 
-    Specular += gl_FrontMaterial.specular * gl_LightSource[i].specular * specDot;
+    Specular += gl_LightSource[i].specular * specDot;
 }
 
 
@@ -97,7 +98,7 @@ void main()
     pointLight(1, normal, eye, ecPosition3);
         
     // TODO(1): Add ambient, diffuse and specular contributions to equation below.
-    vec4 color = gl_FrontLightModelProduct.sceneColor + Ambient + Diffuse + Specular;
+   vec4 color = gl_FrontLightModelProduct.sceneColor + gl_FrontMaterial.ambient*Ambient + gl_FrontMaterial.diffuse*Diffuse + gl_FrontMaterial.specular*Specular;
         
 	// Clamp color to [0, 1]
     color = clamp( color, 0.0, 1.0 );
