@@ -96,10 +96,17 @@ void main()
     // Compute point light contributions
     pointLight(0, n, eye, ecPosition3);
     pointLight(1, n, eye, ecPosition3);
-        
+    
+	Ambient = gl_FrontMaterial.ambient*Ambient;
+	Diffuse = gl_FrontMaterial.diffuse*Diffuse;
+	Specular = gl_FrontMaterial.specular*Specular;
+
     // TODO(1): Add ambient, diffuse and specular contributions to equation below.
-   vec4 color = gl_FrontLightModelProduct.sceneColor + gl_FrontMaterial.ambient*Ambient + gl_FrontMaterial.diffuse*Diffuse + gl_FrontMaterial.specular*Specular;
-        
+    //vec4 color = gl_FrontLightModelProduct.sceneColor + gl_FrontMaterial.ambient*Ambient + gl_FrontMaterial.diffuse*Diffuse + gl_FrontMaterial.specular*Specular;
+    //Phong lighting with texture mapping
+	vec4 texture_color = texture2D(colorMap, vec2(gl_TexCoord[0]));
+	vec4 color = (gl_FrontLightModelProduct.sceneColor + Ambient + Diffuse) * texture_color + Specular;
+	  
 	// Clamp color to [0, 1]
     gl_FragColor = clamp(color, 0.0, 1.0 );
     
