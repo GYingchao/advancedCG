@@ -19,7 +19,6 @@ void vAnimation()
 	// Silly tail
 	if((gl_Vertex.x > 0.375) && (gl_Vertex.z > 0.0)) {
 		vAnimatedPos.yz *= 1.5*abs(cos(g_fFrameTime/80.0));
-		//vAnimatedPos.x *= 1 + 0.1*abs(cos(g_fFrameTime/80.0));
 	}
 
 	// Vivid rotation
