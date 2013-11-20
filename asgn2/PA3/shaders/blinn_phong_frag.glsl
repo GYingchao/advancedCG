@@ -16,11 +16,19 @@ out vec4 ecPosition;
 // animation function
 void vAnimation()
 {
+	// Silly tail
+	if((gl_Vertex.x > 0.375) && (gl_Vertex.z > 0.0)) {
+		vAnimatedPos.yz *= 1.5*abs(cos(g_fFrameTime/80.0));
+		//vAnimatedPos.x *= 1 + 0.1*abs(cos(g_fFrameTime/80.0));
+	}
+
 	// Vivid rotation
 	vAnimatedPos.y *= abs(sin(g_fFrameTime/200.0));
+
 	// Translation
 	vAnimatedPos.x -= 0.4*sin(g_fFrameTime/1000.0);
 	vAnimatedPos.z += 0.2*cos(g_fFrameTime/1000.0);
+
 }
 
 void main()
