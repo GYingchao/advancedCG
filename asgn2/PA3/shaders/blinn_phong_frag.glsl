@@ -6,10 +6,19 @@
 
 // Time since the first frame (in milliseconds) 
 uniform float g_fFrameTime;
+// Declare the vertex animation position as global variable
+vec4 vAnimatedPos;
 
 // data to be passed down to a later stage
 out vec3 normal;
 out vec4 ecPosition;
+
+// animation function
+void vAnimation()
+{
+	// Translation
+	vAnimatedPos.x += 0.4*sin(g_fFrameTime/1000.0) + 0.1;
+}
 
 void main()
 {
@@ -18,7 +27,8 @@ void main()
 	
 	// TODO(4): add an non-trivial interesting animation to the model 
 	//       by changing "vAnimatedPos" using a function of "g_fFrameTime"
-	vec4 vAnimatedPos = gl_Vertex + gl_Vertex.x*abs(cos(g_fFrameTime/500) + sin(3.14 - g_fFrameTime/500));
+	vAnimatedPos = gl_Vertex;
+	vAnimation();
 
     // Eye-coordinate position of vertex, needed in lighting computation
     ecPosition = gl_ModelViewMatrix * vAnimatedPos;
