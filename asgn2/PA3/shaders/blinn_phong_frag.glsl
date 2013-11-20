@@ -16,8 +16,11 @@ out vec4 ecPosition;
 // animation function
 void vAnimation()
 {
+	// Vivid rotation
+	vAnimatedPos.y *= abs(sin(g_fFrameTime/200.0));
 	// Translation
-	vAnimatedPos.x += 0.4*sin(g_fFrameTime/1000.0) + 0.1;
+	vAnimatedPos.x -= 0.4*sin(g_fFrameTime/1000.0);
+	vAnimatedPos.z += 0.2*cos(g_fFrameTime/1000.0);
 }
 
 void main()
@@ -27,6 +30,7 @@ void main()
 	
 	// TODO(4): add an non-trivial interesting animation to the model 
 	//       by changing "vAnimatedPos" using a function of "g_fFrameTime"
+	
 	vAnimatedPos = gl_Vertex;
 	vAnimation();
 
