@@ -269,6 +269,10 @@ void DisplayFunc() {
 	glRotatef(sphi, 0.0, 0.0, 1.0);
 	glTranslatef(-g_center[0], -g_center[1], -g_center[2]);
 
+	// Rotate an proper angle for good animation effect of the dragon model
+	glRotatef(sphi, 0.0, 0.0, 1.0);
+	glRotatef(20, 1.0, 0.0, 0.0);
+
 	// clear the framebuffer and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
