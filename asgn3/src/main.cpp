@@ -11,6 +11,8 @@
 
 #include <map>
 
+#define pi 3.141592653
+
 
 // Enumeration
 enum EnumDisplayMode { 
@@ -25,7 +27,7 @@ enum EnumDisplayMode {
     SHADOWMAPVIS, 
     SHADOWVOLUME, 
     SHADOWVOLUMEVIS,
-    MODENUM };
+	 MODENUM };
 
 char* g_DisplayModeNames[] = {
 	"Wireframe",
@@ -285,6 +287,33 @@ void SetupShadowMapPOVMatrices(GLfloat lightPosition[])
     //    Take a look at the "SetTransformMatrices" function for normal rendering
     //    if you are not familiar with OpenGL transformation functions.
 
+	// Single light point???
+	// First, compute fov from the light
+
+	Vector3f light = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);
+	light = light / light.L2Norm();
+	double c = pow((lightPosition[0] - xpan), 2) + pow((lightPosition[1] - ypan), 2) + pow((lightPosition[2] + sdepth), 2);
+	c = sqrt(c);
+	double sin_fov = g_model.getRadius()/c;
+	double fov = asin(sin_fov) * 180/pi;
+
+	// Set the projection matrix
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(fov, winAspect, zNear, zFar);
+
+	// Set the model*view matrix
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	// Translate the camera to the light point position
+	double dirX = xpan - lightPosition[0];
+	double dirY = ypan - lightPosition[1];
+	double dirZ = -sdepth - lightPosition[2];
+	gluLookAt(lightPosition[0], lightPosition[1], lightPosition[2], dirX, dirY, dirZ, 1, 0, 0);
+	// Translate the model to light view.
+	//glTranslatef(-lightPosition[0], -lightPosition[1], -lightPosition[2]);
+	//glTranslatef(lightPosition[0], lightPosition[1], lightPosition[2]);
+	glTranslatef(light.X(), light.Y(), light.Z());
 }
 
 // Setup the light PoV transformation matrix for the shadow shading pass
