@@ -305,15 +305,22 @@ void SetupShadowMapPOVMatrices(GLfloat lightPosition[])
 	// Set the model*view matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	// Translate the camera to the light point position
-	double dirX = xpan - lightPosition[0];
-	double dirY = ypan - lightPosition[1];
-	double dirZ = -sdepth - lightPosition[2];
-	gluLookAt(lightPosition[0], lightPosition[1], lightPosition[2], dirX, dirY, dirZ, 1, 0, 0);
+	// Translate the camera to the light point positionglTranslatef(xpan, ypan, -sdepth)
+	Vector3f dir = Vector3f(xpan - lightPosition[0], ypan - lightPosition[1], -sdepth - lightPosition[2]);
+	//double dirX = xpan - lightPosition[0];
+	//double dirY = ypan - lightPosition[1];
+	//double dirZ = -sdepth - lightPosition[2];
+	dir = dir / dir.L2Norm();
+	//gluLookAt(lightPosition[0], lightPosition[1], lightPosition[2], dir.X(), dir.Y(), dir.Z(), 0.5, 0.5, 0.5);
+	gluLookAt(light.X(), light.Y(), light.Z(), dir.X(), dir.Y(), dir.Z(), -dir.Y(), dir.X(), 0);
 	// Translate the model to light view.
-	//glTranslatef(-lightPosition[0], -lightPosition[1], -lightPosition[2]);
-	//glTranslatef(lightPosition[0], lightPosition[1], lightPosition[2]);
-	glTranslatef(light.X(), light.Y(), light.Z());
+	glTranslatef(-lightPosition[0], -lightPosition[1], -lightPosition[2]);
+	//glTranslatef(-light.X(), -light.Y(), -light.Z());
+	//glScalef(1/g_model.getRadius(), 1/g_model.getRadius(), 1/g_model.getRadius());
+	glTranslatef(xpan, ypan, -sdepth);
+	glRotatef(-stheta, 1.0, 0.0, 0.0);
+	glRotatef(sphi, 0.0, 0.0, 1.0);
+	glTranslatef(-g_center[0], -g_center[1], -g_center[2]);
 }
 
 // Setup the light PoV transformation matrix for the shadow shading pass
