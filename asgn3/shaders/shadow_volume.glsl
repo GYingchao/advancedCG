@@ -44,13 +44,32 @@ void DetectAndProcessSilhouette( vec3 N,          // triangle normal (Un-normali
 {    
     // TODO: 
     // 1) Compute normal of the adjacent triangle
+	
+	// Specify two edge vectors
+	vec3 v3Ad = vAdj.xyz;
+	vec3 e1 = v3Ad - v1;
+	vec3 e2 = v2 - v1;
+	// Do the cross product to compute the normal of adj trianglar face
+	vec3 N2 = cross(e1, e2);
+
     // 2) Determine if the current and the adjacent
     //    triangle are facing the light
+	
+	// Compute the light view vector VL
+	vec3 VL = normalize(lightPos - (v1+v2)/2);
+	// Do dot product to get the angles
+	float angle1 = dot(VL, normalize(N));
+	float angle2 = dot(VL, normalize(N2));
+
     // 3) Determine if the processed edge is a silhouette
     //    from the light's point of view (PoV)
     //    If not, simply return
     //    Hint: two cases: either the adjacent triangle is null (w==0)
     //          or the two triangles are facing differently in the light PoV
+
+	if((vAdj.w != 0) && ((angle1 <=0)||(angle2>=0))) return;
+	// Only extrude when N is front facing w.r.t L
+
     // 4) Extrude a quad from the silhouette edge in the 
     //    direction away from the light to infinity.
     //    Hint: the output is in the format of a triangle strip.
@@ -64,6 +83,17 @@ void DetectAndProcessSilhouette( vec3 N,          // triangle normal (Un-normali
     //    | /    |
     //    1 ---- 3
 
+	// Specify the away direction.
+	vec4 q0 = vec4(v1, 1);
+	vec4 q1 = vec4(v2, 1);
+	vec4 q2 = vec4(v1 + v1 - lightPos, 0);
+	vec4 q3 = vec4(v2 + v2 - lightPos, 0);
+
+	gl_Position = gl_ProjectionMatrix*q0; EmitVertex();
+	gl_Position = gl_ProjectionMatrix*q1; EmitVertex();
+	gl_Position = gl_ProjectionMatrix*q2; EmitVertex();
+	gl_Position = gl_ProjectionMatrix*q3; EmitVertex();
+	EndPrimitive();
 }
 
 void main()
