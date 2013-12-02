@@ -287,11 +287,7 @@ void SetupShadowMapPOVMatrices(GLfloat lightPosition[])
     //    Take a look at the "SetTransformMatrices" function for normal rendering
     //    if you are not familiar with OpenGL transformation functions.
 
-	// Single light point???
 	// First, compute fov from the light
-
-	Vector3f light = Vector3f(lightPosition[0], lightPosition[1], lightPosition[2]);
-	light = light / light.L2Norm();
 	double c = pow((lightPosition[0] - xpan), 2) + pow((lightPosition[1] - ypan), 2) + pow((lightPosition[2] + sdepth), 2);
 	c = sqrt(c);
 	double sin_fov = g_model.getRadius()/c;
@@ -305,18 +301,10 @@ void SetupShadowMapPOVMatrices(GLfloat lightPosition[])
 	// Set the model*view matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	// Translate the camera to the light point positionglTranslatef(xpan, ypan, -sdepth)
-	Vector3f dir = Vector3f(xpan - lightPosition[0], ypan - lightPosition[1], -sdepth - lightPosition[2]);
-	//double dirX = xpan - lightPosition[0];
-	//double dirY = ypan - lightPosition[1];
-	//double dirZ = -sdepth - lightPosition[2];
-	dir = dir / dir.L2Norm();
-	//gluLookAt(lightPosition[0], lightPosition[1], lightPosition[2], dir.X(), dir.Y(), dir.Z(), 0.5, 0.5, 0.5);
-	gluLookAt(light.X(), light.Y(), light.Z(), dir.X(), dir.Y(), dir.Z(), -dir.Y(), dir.X(), 0);
-	// Translate the model to light view.
-	glTranslatef(-lightPosition[0], -lightPosition[1], -lightPosition[2]);
-	//glTranslatef(-light.X(), -light.Y(), -light.Z());
-	//glScalef(1/g_model.getRadius(), 1/g_model.getRadius(), 1/g_model.getRadius());
+	// Translate the camera to the light point looking at center(xpan, ypan, -sdepth)
+	gluLookAt(lightPosition[0], lightPosition[1], lightPosition[2], xpan, ypan, -sdepth, 0., 1, 0.);
+	// The model matrix is defined as setTransformMatrix()
+	glScalef(1./g_model.getRadius(), 1./g_model.getRadius(), 1./g_model.getRadius()); // not sure whether this helps
 	glTranslatef(xpan, ypan, -sdepth);
 	glRotatef(-stheta, 1.0, 0.0, 0.0);
 	glRotatef(sphi, 0.0, 0.0, 1.0);
