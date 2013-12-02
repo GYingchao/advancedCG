@@ -106,13 +106,18 @@ void main()
     // TODO:
     // 1) Compute shadow map coordinate (including depth)
     //    in texture space (Hint: use perspective division)
+	vec4 shadowMapCoord = shadowCoord / shadowCoord.w;
+
     // 2) Fetch depth from the shadow map
+	float depth = texture2D(shadowMap, shadowMapCoord.xy).z;
+
     // 3) Compute "shadow" value based on the comparison of 
     //    fetched depth and the computed depth
     //    Hint: Compare with the tolerance "shadowZOffset"
     //          to avoid shadow acnes in self shadowing
-
-
+	if(shadowMapCoord.z > depth + shadowZOffset) {
+		shadow = 0.0;
+	}
 
     vec4 color = Diffuse * gl_FrontMaterial.diffuse;
 
