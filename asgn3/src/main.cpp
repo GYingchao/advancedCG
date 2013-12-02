@@ -325,8 +325,14 @@ void SetupShadowMapTextureMatrix(GLfloat lightModelView[], GLfloat lightProjecti
     //       to shadow map texture space ([0,1]x[0,1]x[0,1])
     //       The matrices that we use for the shadow map pass
     //       are given. 
-
-
+	glLoadIdentity();
+	// Do the mapping from NDC to texture coordinate
+	glScalef(0.5, 0.5, 0.5);
+	glTranslatef(1, 1, 1);
+	// Concatenate the modelview and projection matrices
+	glMultMatrixf(lightProjection);
+	glMultMatrixf(lightModelView);
+	
     // After setting GL_TEXTURE matrix, go back to normal matrix mode
     glMatrixMode(GL_MODELVIEW);
 }
